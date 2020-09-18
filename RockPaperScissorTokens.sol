@@ -185,6 +185,7 @@ contract RockPaperScissorToken is Pausable{
 	event GameEnded(address indexed winner, address indexed loser, address token, uint prize, uint8 p1Action, uint8 p2Action);
 	event GameEndedByForfeit(address indexed winner, address indexed loser, uint prize);
 	event GameCancelled(address indexed player1);
+	event GameDraw(address indexed player1, address indexed player2, address token, uint wager);
 
 
 	/**
@@ -320,12 +321,13 @@ contract RockPaperScissorToken is Pausable{
 		if (winner == address(0)) {
 			IERC20(game.token).safeTransfer(msg.sender, prize.div(2));
 			IERC20(game.token).safeTransfer(game.player2, prize.div(2));
+			emit GameDraw(winner, loser, game.token, game.wager);
 		}
 		else {
 			IERC20(game.token).safeTransfer(winner, prize);
+			emit GameEnded(winner, loser, game.token, prize, p1Action, game.p2Action);
 		}
 		lockedPrizes[game.token] = lockedPrizes[game.token].sub(game.wager.mul(2));
-		emit GameEnded(winner, loser, game.token, prize, p1Action, game.p2Action);
 		game.ongoing = false;
 		game.created = false;
 		games[game.player2] = game;

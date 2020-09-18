@@ -119,6 +119,7 @@ contract RockPaperScissor is Pausable{
 	event GameEnded(address indexed winner, address indexed loser, uint prize, uint8 p1Action, uint8 p2Action);
 	event GameEndedByForfeit(address indexed winner, address indexed loser, uint prize);
 	event GameCancelled(address indexed player1);
+	event GameDraw(address indexed player1, address indexed player2, uint wager);
 
 
 	/**
@@ -145,7 +146,7 @@ contract RockPaperScissor is Pausable{
 	 * Using web3.js, for outcome _out (uint8) and secret _secret (uint256)
 	 * hash = web3.utils.soliditySha3({type: 'uint8', value: _out}, {type: 'uint256', value: _secret});
 	 * 
-	 * requirement: game.created and game.created must be false
+	 * requirement: game.created and game.ongoing must be false
 	 *
 	 * Emits a {GameCreated} event.
 	 */
@@ -199,7 +200,7 @@ contract RockPaperScissor is Pausable{
 	/**
 	 * @dev Allows player 2 to claim the prize if player 1 takes too long to reveal his move
 	 * 
-	 * reuirement: function call must happen after the deadline of 24 hours
+	 * Requirement: function call must happen after the deadline of 24 hours
 	 * 
 	 * Requires that both player 1 and player 2 are playing against each other
 	 * 
@@ -247,12 +248,13 @@ contract RockPaperScissor is Pausable{
 		if (winner == address(0)) {
 			msg.sender.transfer(prize.div(2));
 			game.player2.transfer(prize.div(2));
+			emit GameDraw(winner, loser, game.wager);
 		}
 		else {
 			winner.transfer(prize);
+			emit GameEnded(winner, loser, prize, p1Action, game.p2Action);
 		}
 		lockedPrize = lockedPrize.sub(game.wager.mul(2));
-		emit GameEnded(winner, loser, prize, p1Action, game.p2Action);
 		game.ongoing = false;
 		game.created = false;
 		games[game.player2] = game;
