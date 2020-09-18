@@ -46,14 +46,14 @@ library SafeMath {
 }
 
 interface IERC20 {
-    function totalSupply() external view returns (uint256);
-    function balanceOf(address account) external view returns (uint256);
-    function transfer(address recipient, uint256 amount) external returns (bool);
-    function allowance(address owner, address spender) external view returns (uint256);
-    function approve(address spender, uint256 amount) external returns (bool);
-    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
-    event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(address indexed owner, address indexed spender, uint256 value);
+	function totalSupply() external view returns (uint256);
+	function balanceOf(address account) external view returns (uint256);
+	function transfer(address recipient, uint256 amount) external returns (bool);
+	function allowance(address owner, address spender) external view returns (uint256);
+	function approve(address spender, uint256 amount) external returns (bool);
+	function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+	event Transfer(address indexed from, address indexed to, uint256 value);
+	event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
 library Address {
@@ -121,31 +121,31 @@ contract Ownable {
 	}
 	
 	function SetOwnership(address _newOwner) external onlyOwner {
-	    owner = _newOwner;
+		owner = _newOwner;
 	}
 
 	
 }
 
 contract Pausable is Ownable {
-    bool public isPaused;
-    
-    constructor () {
-        isPaused = false;
-    }
-    
-    modifier isNotPaused() {
-        require (!isPaused, "Game is paused");
-        _;
-    }
-    
-    function pause() external onlyOwner {
-        isPaused = true;
-    }
-    
-    function unpause() external onlyOwner {
-        isPaused = false;
-    }
+	bool public isPaused;
+	
+	constructor () {
+		isPaused = false;
+	}
+	
+	modifier isNotPaused() {
+		require (!isPaused, "Game is paused");
+		_;
+	}
+	
+	function pause() external onlyOwner {
+		isPaused = true;
+	}
+	
+	function unpause() external onlyOwner {
+		isPaused = false;
+	}
 }
 
 contract RockPaperScissorToken is Pausable{
@@ -187,25 +187,25 @@ contract RockPaperScissorToken is Pausable{
 	event GameCancelled(address indexed player1);
 
 
-    /**
-     * @dev Cancels a game for msg.sender.
+	/**
+	 * @dev Cancels a game for msg.sender.
 	 * 
 	 * requirement: game.created == true mand game.created == false
-     *
-     * Emits a {GameCreated} event.
-     */
-    function CancelGame() external isNotPaused {
-        Game storage game = games[msg.sender];
-        require (game.created && !game.ongoing, "Game cannot be cancelled");
-        require (msg.sender == game.player1, "Not player 1");
-        game.created = false;
+	 *
+	 * Emits a {GameCreated} event.
+	 */
+	function CancelGame() external isNotPaused {
+		Game storage game = games[msg.sender];
+		require (game.created && !game.ongoing, "Game cannot be cancelled");
+		require (msg.sender == game.player1, "Not player 1");
+		game.created = false;
 		IERC20(game.token).safeTransfer(msg.sender, game.wager);
-        emit GameCancelled(msg.sender);
-    }
+		emit GameCancelled(msg.sender);
+	}
 
 	/**
-     * @dev Creates a new game for msg.sender.
-     * _p2 may be set to address(0) if game is public or to a specified address to play against one person in particular.
+	 * @dev Creates a new game for msg.sender.
+	 * _p2 may be set to address(0) if game is public or to a specified address to play against one person in particular.
 	 * _hash represents the the hash of the keccak encryption of player1's outcome and a random secret.
 	 * _token represents the token address
 	 * _amount represents the amount of tokens to wager
@@ -214,17 +214,17 @@ contract RockPaperScissorToken is Pausable{
 	 * hash = web3.utils.soliditySha3({type: 'uint8', value: _out}, {type: 'uint256', value: _secret});
 	 * 
 	 * requirement: game.created and game.created must be false
-     *
-     * Emits a {GameCreated} event.
-     */
+	 *
+	 * Emits a {GameCreated} event.
+	 */
 	function CreateGame(address _p2, uint _hash, address _token, uint _amount) external isNotPaused {
 		Game storage game = games[msg.sender];
 		require (!game.ongoing && !game.created, "Game not in clean state");
 		require (_p2 != msg.sender, "Cannot play against yourself");
 		require (_amount > 0, "Bet cannot be 0");
 		require (IERC20(_token).balanceOf(msg.sender) >= _amount, "Player does not have sufficient balance");
-        IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
-        lockedPrizes[_token] = lockedPrizes[_token].add(_amount);
+		IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
+		lockedPrizes[_token] = lockedPrizes[_token].add(_amount);
 		game.wager = _amount;
 		game.token = _token;
 		game.player1 = msg.sender;
@@ -235,8 +235,8 @@ contract RockPaperScissorToken is Pausable{
 	}
 
 	/**
-     * @dev Allows player 2 to join a created game and give his outcome
-     * _outcome is player 2's choice
+	 * @dev Allows player 2 to join a created game and give his outcome
+	 * _outcome is player 2's choice
 	 * _p1 is the address mapped to the game player 2 wishes to join
 	 * _token represents the token address
 	 * _amount represents the amount of tokens to wager
@@ -246,20 +246,20 @@ contract RockPaperScissorToken is Pausable{
 	 * requirement : player 2 game.created and game.ongoing must be false
 	 *              _token == game.token
 	 * 
-     * Emits a {GameJoined} event.
-     */
+	 * Emits a {GameJoined} event.
+	 */
 	function JoinGameAndPlay(uint8 _action, address _p1, address _token, uint _amount) external isNotPaused{
-	    Game memory p2Game = games[msg.sender];
-	    require (!p2Game.ongoing && !p2Game.created, "Joining player has ongoing game");
-	    
+		Game memory p2Game = games[msg.sender];
+		require (!p2Game.ongoing && !p2Game.created, "Joining player has ongoing game");
+		
 		Game storage game = games[_p1];
 		require (game.created && !game.ongoing, "Game ongoing");
 		require (game.player2 == msg.sender || game.player2 == address(0), "Joining player not allowed to join game");
 		require (_amount == game.wager, "Bet does not match record");
 		require (_token == game.token, "Tokens do not match");
 		require (IERC20(_token).balanceOf(msg.sender) >= _amount, "Player does not have sufficient balance");
-        IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
-        lockedPrizes[_token] = lockedPrizes[_token].add(_amount);
+		IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
+		lockedPrizes[_token] = lockedPrizes[_token].add(_amount);
 		if (game.player2 == address(0))
 			game.player2 = msg.sender;
 		game.p2Action = _action % 3;
@@ -270,14 +270,14 @@ contract RockPaperScissorToken is Pausable{
 	}
 	
 	/**
-     * @dev Allows player 2 to claim the prize if player 1 takes too long to reveal his move
+	 * @dev Allows player 2 to claim the prize if player 1 takes too long to reveal his move
 	 * 
 	 * reuirement: function call must happen after the deadline of 24 hours
 	 * 
 	 * Requires that both player 1 and player 2 are playing against each other
 	 * 
-     * Emits a {GameEndedByForfeit} event.
-     */
+	 * Emits a {GameEndedByForfeit} event.
+	 */
 	function ClaimByForfeit() external isNotPaused{
 		Game storage game = games[msg.sender];
 		require (game.player2 == msg.sender, "Not player 2");
@@ -295,14 +295,14 @@ contract RockPaperScissorToken is Pausable{
 	
 	
 	/**
-     * @dev Allows player 1 to reveal his action
-     * _action is player 1's choice
+	 * @dev Allows player 1 to reveal his action
+	 * _action is player 1's choice
 	 * _secret is a random uint256 value that he chose to hash his action
 	 * 
 	 * Requires that both player 1 and player 2 are playing against each other
 	 * 
-     * Emits a {GameEnded} event.
-     */
+	 * Emits a {GameEnded} event.
+	 */
 	function RevealGame(uint8 _action, uint _secret) external isNotPaused{
 		Game storage game = games[msg.sender];
 
@@ -318,8 +318,8 @@ contract RockPaperScissorToken is Pausable{
 		(winner, loser) = GetWinner(msg.sender, game.player2, p1Action, game.p2Action);
 		uint prize = game.wager.mul(2).mul(maxShare.sub(houseShare)).div(maxShare);
 		if (winner == address(0)) {
-		    IERC20(game.token).safeTransfer(msg.sender, prize.div(2));
-		    IERC20(game.token).safeTransfer(game.player2, prize.div(2));
+			IERC20(game.token).safeTransfer(msg.sender, prize.div(2));
+			IERC20(game.token).safeTransfer(game.player2, prize.div(2));
 		}
 		else {
 			IERC20(game.token).safeTransfer(winner, prize);
