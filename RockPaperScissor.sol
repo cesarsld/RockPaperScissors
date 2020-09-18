@@ -125,7 +125,7 @@ contract RockPaperScissor is Pausable{
 	/**
 	 * @dev Cancels a game for msg.sender.
 	 * 
-	 * requirement: game.created == true mand game.created == false
+	 * requirement: game.created == true and game.ongoing == false
 	 *
 	 * Emits a {GameCreated} event.
 	 */
